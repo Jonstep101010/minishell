@@ -16,6 +16,7 @@
  */
 int	not_builtin(t_shell *shell, t_token *token)
 {
+	int	status;
 	pid_t test = -1;
 	if (!equal("exit", token->cmd_args[0].elem))
 		test = fork();
@@ -28,8 +29,11 @@ int	not_builtin(t_shell *shell, t_token *token)
 		exit(0);
 	}
 	else
-		waitpid(test, NULL, 0);
-	return (0);
+	{
+		waitpid(test, &status, 0);
+		shell->exit_status = WEXITSTATUS(status);
+	}
+	return (shell->exit_status);
 }
 
 // @follow-up could be called from a loop and destroy owned args?

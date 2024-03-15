@@ -19,9 +19,11 @@ void	minishell_loop(t_shell *shell)
 	char	*readline_line;
 	char	*trimmed_line;
 
-	check_signals(&shell->p_termios);
+	// check_signals(&shell->p_termios);
 	while (1)
 	{
+		if (isatty(fileno(stdin)))
+		{
 		readline_line = readline("minishell> ");
 		trimmed_line = ft_strtrim(readline_line, WHITESPACE);
 		if (!readline_line || !trimmed_line)
@@ -38,6 +40,32 @@ void	minishell_loop(t_shell *shell)
 		{
 			execute_commands(shell, shell->token);
 			destroy_all_tokens(shell);
+		}
+		}
+		else//enable testing
+		{
+			readline_line = get_next_line(fileno(stdin));
+			if (ft_strlen(readline_line) == 0)
+			{
+				free(readline_line);
+				continue ;
+			}
+			trimmed_line = ft_strtrim(readline_line, WHITESPACE);
+			if (!readline_line || !trimmed_line)
+				builtin_exit(shell, NULL);
+			add_history(trimmed_line);
+			free(readline_line);
+			if (*trimmed_line == '\0' || lexer(shell, trimmed_line) != LEXER_SUCCESS)
+			{
+				free(trimmed_line);
+				continue ;
+			}
+			free(trimmed_line);
+			if (shell->env && *shell->env && shell->token)
+			{
+				execute_commands(shell, shell->token);
+				destroy_all_tokens(shell);
+			}
 		}
 	}
 }
