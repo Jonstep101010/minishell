@@ -24,23 +24,23 @@ void	minishell_loop(t_shell *shell)
 	{
 		if (isatty(fileno(stdin)))
 		{
-		readline_line = readline("minishell> ");
-		trimmed_line = ft_strtrim(readline_line, WHITESPACE);
-		if (!readline_line || !trimmed_line)
-			builtin_exit(shell, NULL);
-		add_history(trimmed_line);
-		free(readline_line);
-		if (*trimmed_line == '\0' || lexer(shell, trimmed_line) != LEXER_SUCCESS)
-		{
+			readline_line = readline("minishell> ");
+			trimmed_line = ft_strtrim(readline_line, WHITESPACE);
+			if (!readline_line || !trimmed_line)
+				builtin_exit(shell, NULL);
+			add_history(trimmed_line);
+			free(readline_line);
+			if (*trimmed_line == '\0' || lexer(shell, trimmed_line) != LEXER_SUCCESS)
+			{
+				free(trimmed_line);
+				continue ;
+			}
 			free(trimmed_line);
-			continue ;
-		}
-		free(trimmed_line);
-		if (shell->env && *shell->env && shell->token)
-		{
-			execute_commands(shell, shell->token);
-			destroy_all_tokens(shell);
-		}
+			if (shell->env && *shell->env && shell->token)
+			{
+				execute_commands(shell, shell->token);
+				destroy_all_tokens(shell);
+			}
 		}
 		else//enable testing
 		{
