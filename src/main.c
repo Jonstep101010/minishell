@@ -45,11 +45,6 @@ void	minishell_loop(t_shell *shell)
 		else//enable testing
 		{
 			readline_line = get_next_line(fileno(stdin));
-			if (ft_strlen(readline_line) == 0)
-			{
-				free(readline_line);
-				continue ;
-			}
 			trimmed_line = ft_strtrim(readline_line, WHITESPACE);
 			if (!readline_line || !trimmed_line)
 				builtin_exit(shell, NULL);
