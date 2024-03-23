@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stddef.h>
 #include <sys/param.h>
 #include "arr_utils.h"
@@ -17,19 +16,14 @@ enum e_redir	check_redirections(t_arg *cmd_args);
 
 static void	*setup_token(t_token *token)
 {
-	size_t	len;
-
 	if (!token || !token->split_pipes)
 		return (NULL);
 	token->tmp_arr = split_outside_quotes(token->split_pipes, WHITESPACE);
 	if (!token->tmp_arr)
 		return (NULL);
-	len = arr_len(token->tmp_arr);
-	if (len == 0)
-		return (NULL);
-	token->cmd_args = init_cmdargs(len);
-	if (!token->cmd_args)
-		return (NULL);
+	if (!*token->tmp_arr)
+		return (arr_free(token->tmp_arr), NULL);
+	token->cmd_args = init_cmdargs(arr_len(token->tmp_arr));
 	return (token);
 }
 
@@ -81,10 +75,8 @@ static void	*inner_loop(t_token *token, char *const *env)
 	while (token->tmp_arr[ii])
 	{
 		token->cmd_args[ii].elem = token->tmp_arr[ii];
-		set_cmd_func(token);
 		if (!expand_if_allowed(token, ii, env))
 			return (NULL);
-		set_cmd_func(token);
 		ii++;
 	}
 	if (check_redirections(token->cmd_args))
@@ -94,6 +86,11 @@ static void	*inner_loop(t_token *token, char *const *env)
 		rm_prefix_redir_word(token->cmd_args);
 	}
 	rm_quotes(token->cmd_args);
+	ii = -1;
+	while (++ii && token->has_redir && token->cmd_args[ii].elem)
+		if (token->cmd_args[ii].redir == NO_REDIR)
+			break ;
+	set_cmd_func(token->cmd_args[ii].elem, token);
 	return (token);
 }
 
@@ -108,7 +105,8 @@ void	*tokenize(t_shell *shell, char const *trimmed_line)
 		return (eprint("alloc fail"), NULL);
 	while (shell->token[i].split_pipes)
 	{
-		setup_token(&shell->token[i]);
+		if (!setup_token(&shell->token[i]))
+			return (destroy_all_tokens(shell), NULL);
 		inner_loop(&shell->token[i], shell->env);
 		free(shell->token[i].tmp_arr);
 		i++;

@@ -38,12 +38,12 @@ struct s_token
 	bool	has_redir;
 	char	*split_pipes;
 	char	**tmp_arr;
-	char	**command;// for execution (each token has the command)
-	// char	*bin;// for finding path/to/bin?
+	char	**command;
+	char	*bin;
 	int		(*cmd_func)(t_shell *, t_token *);
 };
 
-void	set_cmd_func(t_token *token);
+void	set_cmd_func(const char *cmd, t_token *token);
 
 t_token	*get_tokens(char const *trimmed_line);
 void	*tokenize(t_shell *shell, char const *trimmed_line);

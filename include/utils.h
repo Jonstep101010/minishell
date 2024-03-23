@@ -2,6 +2,7 @@
 # define UTILS_H
 # include "arr_utils.h"
 # include "libutils.h"
+#include "tokens.h"
 
 char	*equal(const char *expected, const char *actual);
 
@@ -31,6 +32,8 @@ void	range_ignore(const char *s, bool *ignore, unsigned char c);
  * @brief "minishell: " + fmt on stderr
  */
 void	eprint(const char *fmt, ...);
+void	exit_free(t_shell *shell, int exit_code);
+void	exit_error(t_shell *shell, char *error_elem);
 
 /**
  * @brief fmt on stderr

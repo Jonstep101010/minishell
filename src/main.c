@@ -24,30 +24,37 @@ void	minishell_loop(t_shell *shell)
 	{
 		if (isatty(fileno(stdin)))
 		{
-			readline_line = readline("minishell> ");
-			trimmed_line = ft_strtrim(readline_line, WHITESPACE);
-			if (!readline_line || !trimmed_line)
-				builtin_exit(shell, NULL);
-			add_history(trimmed_line);
-			free(readline_line);
-			if (*trimmed_line == '\0' || lexer(shell, trimmed_line) != LEXER_SUCCESS)
-			{
-				free(trimmed_line);
-				continue ;
-			}
+		readline_line = readline("minishell> ");
+		trimmed_line = ft_strtrim(readline_line, WHITESPACE);
+		if (!readline_line || !trimmed_line)
+			builtin_exit(shell, NULL);
+		add_history(trimmed_line);
+		free(readline_line);
+		if (*trimmed_line == '\0' || lexer(shell, trimmed_line) != LEXER_SUCCESS)
+		{
 			free(trimmed_line);
-			if (shell->env && *shell->env && shell->token)
-			{
-				execute_commands(shell, shell->token);
-				destroy_all_tokens(shell);
-			}
+			continue ;
+		}
+		free(trimmed_line);
+		if (shell->env && *shell->env && shell->token)
+		{
+			execute_commands(shell, shell->token);
+		}
 		}
 		else//enable testing
 		{
 			readline_line = get_next_line(fileno(stdin));
+			if (readline_line)
+			{
+
 			trimmed_line = ft_strtrim(readline_line, WHITESPACE);
-			if (!readline_line || !trimmed_line)
-				builtin_exit(shell, NULL);
+			if (!trimmed_line)
+			{
+				free(readline_line);
+				arr_free(shell->env);
+				free(shell);
+				exit(1);
+			}
 			add_history(trimmed_line);
 			free(readline_line);
 			if (*trimmed_line == '\0' || lexer(shell, trimmed_line) != LEXER_SUCCESS)
@@ -59,8 +66,13 @@ void	minishell_loop(t_shell *shell)
 			if (shell->env && *shell->env && shell->token)
 			{
 				execute_commands(shell, shell->token);
-				destroy_all_tokens(shell);
 			}
+			}
+			int	status = shell->exit_status;
+			if (shell->env)
+				arr_free(shell->env);
+			free(shell);
+			exit(status);
 		}
 	}
 }
