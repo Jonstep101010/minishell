@@ -1,4 +1,4 @@
-NAME		  := minishell
+NAME		= minishell
 
 ifeq ($(uname -s),Darwin)
 DONE		= printf "\033[0;32m\xE2\x9C\x93\033[0m "
@@ -8,13 +8,18 @@ DONE		= printf "\033[0;32m✓\033[0m "
 DONE_NL		= printf "\033[0;32m✓\033[0m\n\n"
 endif
 
-# MAKEFLAGS	+= --no-print-directory --silent
+MAKEFLAGS	+= --no-print-directory --silent
 
 CC = clang
 # ----------------------------- includes/linking ----------------------------- #
-CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer -I./include $(shell find ./src -type d | sed 's/^/-I/') $(shell find ./include -name "*.a" -exec dirname {} \; | xargs -I{} find {} -type d | sed 's/^/-I/')
+CFLAGS = -Wall -Wextra -Werror -g -fsanitize=address,undefined -fsanitize-address-use-after-scope -fno-omit-frame-pointer -I./include -I./include/libutils/include -I./include/libft -I./include/libftprintf -I./include/libgnl
 
 LDFLAGS = ./include/libgnl/libgnl.a ./include/libftprintf/libftprintf.a ./include/libutils/libutils.a ./include/libft/libft.a
+ifeq ($(uname -s),Darwin)
+READLINE = $(shell brew --prefix readline)
+CFLAGS += -I $(READLINE)/include
+LDFLAGS += -L $(READLINE)/lib -lreadline
+endif
 
 # ---------------------------------------------------------------------------- #
 #                                 source files                                 #
@@ -24,28 +29,20 @@ SRCS = $(addprefix src/builtins/, builtin_cd.c builtin_echo.c builtin_env.c buil
     $(addprefix src/execution/, execute_pipes.c execute_commands.c exec_utils.c redirections.c heredoc.c bin_path.c) \
     $(addprefix src/environment/, export_env.c get_env.c get_index.c check_key.c expander.c) \
     $(addprefix src/lexer/, check_pipes.c check_quotes.c checks_basic.c lexer_support.c lexer.c) \
-    $(addprefix src/parser/, interpret_quotes.c parser.c split_outside_quotes.c) \
+    $(addprefix src/parser/, interpret_quotes.c split_outside_quotes.c) \
     $(addprefix src/signals/, signals.c) \
     $(addprefix src/tokenizer/, build_command.c build_tokens.c destroy_tokens.c token_utils.c redirection_utils.c) \
-    $(addprefix src/utils/, arr_utils.c bool_array.c error.c free_strjoin.c free_strjoin_utils.c print_arr_sep.c str_equal.c while_string_wrapper.c memsize.c) \
+    $(addprefix src/utils/, arr_utils.c bool_array.c error.c print_arr_sep.c str_equal.c get_input.c exit_free.c) \
     src/init.c src/main.c
-OBJS = $(SRCS:.c=.o)
 
-TARGET = minishell
+BUILD_DIR = build
+OBJS = $(addprefix $(BUILD_DIR)/, $(SRCS:.c=.o))
 
 # ---------------------------------------------------------------------------- #
 #                                     rules                                    #
 # ---------------------------------------------------------------------------- #
 
-LIBS:
-	$(MAKE) -C ./include/libft
-	$(MAKE) -C ./include/libutils
-	$(MAKE) -C ./include/libgnl
-	$(MAKE) -C ./include/libftprintf
-
-all: $(TARGET) $(LIBS)
-	$(shell mkdir -p build; mv $(OBJS) build)
-	$(DONE_NL)
+all: $(NAME)
 
 # ----------------------------- additional rules ----------------------------- #
 ceedling:
@@ -64,27 +61,32 @@ memcheck-all: ceedling
 # ---------------------------------------------------------------------------- #
 #                                  compilation                                 #
 # ---------------------------------------------------------------------------- #
-$(TARGET): $(OBJS)
+$(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -lreadline -o $@ $^ $(LDFLAGS)
+	$(DONE_NL)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD_DIR)/%.o: %.c
+	@mkdir -p $(@D)
+	@$(MAKE) -C ./include/libft
+	@$(MAKE) -C ./include/libutils
+	@$(MAKE) -C ./include/libgnl
+	@$(MAKE) -C ./include/libftprintf
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf build
-	$(MAKE) -C ./include/libft clean
-	$(MAKE) -C ./include/libutils clean
-	$(MAKE) -C ./include/libgnl clean
-	$(MAKE) -C ./include/libftprintf clean
+	@rm -rf build
+	@$(MAKE) -C ./include/libft clean
+	@$(MAKE) -C ./include/libutils clean
+	@$(MAKE) -C ./include/libgnl clean
+	@$(MAKE) -C ./include/libftprintf clean
 fclean: clean
-	rm -f $(TARGET)
-	$(MAKE) -C ./include/libft fclean
-	$(MAKE) -C ./include/libutils fclean
-	$(MAKE) -C ./include/libgnl fclean
-	$(MAKE) -C ./include/libftprintf fclean
+	@rm -f $(NAME)
+	@$(MAKE) -C ./include/libft fclean
+	@$(MAKE) -C ./include/libutils fclean
+	@$(MAKE) -C ./include/libgnl fclean
+	@$(MAKE) -C ./include/libftprintf fclean
 
 re: fclean
-	git submodule update --init
 	$(MAKE)
 
 memtest:

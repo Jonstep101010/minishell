@@ -1,22 +1,18 @@
-#include "lexer.h"
-#include "struct.h"
+#include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <unistd.h>
-
 #include "msh_signals.h"
-
-#include "minishell.h"
-#include "libft.h"
-#include <stdlib.h>
 #include "get_next_line.h"
+#include "minishell.h"
+#include <stdlib.h>
 #include "utils.h"
 #include "commands.h"
-t_lexer lexer(t_shell *shell, const char *trimmed_line);
+#include "lexer.h"
+#include "struct.h"
 
 void	minishell_loop(t_shell *shell)
 {
-	char	*readline_line;
 	char	*trimmed_line;
 
 	// check_signals(&shell->p_termios);
@@ -24,51 +20,29 @@ void	minishell_loop(t_shell *shell)
 	{
 		if (isatty(fileno(stdin)))
 		{
-		readline_line = readline("minishell> ");
-		trimmed_line = ft_strtrim(readline_line, WHITESPACE);
-		if (!readline_line || !trimmed_line)
-			builtin_exit(shell, NULL);
-		add_history(trimmed_line);
-		free(readline_line);
-		if (*trimmed_line == '\0' || lexer(shell, trimmed_line) != LEXER_SUCCESS)
-		{
-			free(trimmed_line);
-			continue ;
+			trimmed_line = get_input(readline("minishell> "));
+			if (!trimmed_line)
+				builtin_exit(shell, NULL);
+			add_history(trimmed_line);
+			if (!*trimmed_line || lexer(shell, trimmed_line) != LEXER_SUCCESS)
+				continue ;
+			if (shell->env && *shell->env && shell->token)
+				execute_commands(shell, shell->token);
 		}
-		free(trimmed_line);
-		if (shell->env && *shell->env && shell->token)
+		else
 		{
-			execute_commands(shell, shell->token);
-		}
-		}
-		else//enable testing
-		{
-			readline_line = get_next_line(fileno(stdin));
-			if (readline_line)
-			{
-
-			trimmed_line = ft_strtrim(readline_line, WHITESPACE);
+			trimmed_line = get_input(get_next_line(fileno(stdin)));
 			if (!trimmed_line)
 			{
-				free(readline_line);
 				arr_free(shell->env);
 				free(shell);
 				exit(1);
 			}
-			add_history(trimmed_line);
-			free(readline_line);
-			if (*trimmed_line == '\0' || lexer(shell, trimmed_line) != LEXER_SUCCESS)
-			{
-				free(trimmed_line);
+			if (!*trimmed_line || lexer(shell, trimmed_line) != LEXER_SUCCESS)
 				continue ;
-			}
-			free(trimmed_line);
 			if (shell->env && *shell->env && shell->token)
-			{
 				execute_commands(shell, shell->token);
-			}
-			}
-			int	status = shell->exit_status;
+			int status = shell->exit_status;
 			if (shell->env)
 				arr_free(shell->env);
 			free(shell);

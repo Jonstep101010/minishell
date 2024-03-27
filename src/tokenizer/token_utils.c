@@ -6,19 +6,24 @@
 
 void	set_cmd_func(const char *cmd, t_token *token)
 {
-	uint8_t	i;
+	uint8_t					i;
+	const struct s_func		cmds[] = {
+	{"echo", echo}, {"cd", builtin_cd},
+	{"pwd", builtin_pwd}, {"export", builtin_export},
+	{"unset", builtin_unset}, {"env", builtin_env},
+	{"exit", builtin_exit}, {NULL, NULL}};
 
 	i = 0;
-	while (g_cmds[i].name)
+	while (cmds[i].name)
 	{
-		if (equal(cmd, g_cmds[i].name))
+		if (equal(cmd, cmds[i].name))
 		{
-			token->cmd_func = g_cmds[i].cmd;
+			token->cmd_func = cmds[i].cmd;
 			return ;
 		}
 		i++;
 	}
-	token->cmd_func = not_builtin;
+	token->cmd_func = exec_bin;
 }
 
 t_arg	*init_cmdargs(size_t size)
@@ -40,10 +45,10 @@ t_arg	*init_cmdargs(size_t size)
  */
 t_token	*init_token(size_t size)
 {
-	t_token	*token = ft_calloc(sizeof(t_token), (size + 1));
+	const t_token	*token = ft_calloc(sizeof(t_token), (size + 1));
 	const t_token	template = {
 		.has_redir = false,
-		.cmd_func = not_builtin,
+		.cmd_func = exec_bin,
 	};
 
 	while (token && size--)
