@@ -12,6 +12,7 @@ int	check_pipes_redirection_quotes(const char *s, t_lexer *input)
 	int	flag_word = 0;
 	if (*s == '|')
 		return (eprint("found leading pipe"), ERR_LEADING);
+	fprintf(stderr, "s: %s\n", s);
 	if (ft_strchr("<>|", s[input->len - 1]))
 		return (eprint("found trailing redir/pipe"), ERR_TRAILING);
 	size_t	i = 0;
@@ -59,6 +60,7 @@ int	check_pipes_redirection(const char *s, t_lexer *input)
 		return (check_pipes_redirection_quotes(s, input));
 	if (*s == '|')
 		return (eprint("found leading pipe"), ERR_LEADING);
+	fprintf(stderr, "s: %s\n", s);
 	if (ft_strchr("<>|", s[input->len - 1]))
 		return (eprint("found trailing redir/pipe"), ERR_TRAILING);
 	size_t	i = 0;
