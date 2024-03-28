@@ -31,22 +31,20 @@ void	minishell_loop(t_shell *shell)
 		}
 		else
 		{
+			int	status;
 			trimmed_line = get_input(get_next_line(fileno(stdin)));
 			if (!trimmed_line)
 			{
+				status = shell->exit_status;
 				arr_free(shell->env);
 				free(shell);
-				exit(1);
+				exit(status);
 			}
 			if (!*trimmed_line || lexer(shell, trimmed_line) != LEXER_SUCCESS)
 				continue ;
 			if (shell->env && *shell->env && shell->token)
 				execute_commands(shell, shell->token);
-			int status = shell->exit_status;
-			if (shell->env)
-				arr_free(shell->env);
-			free(shell);
-			exit(status);
+			status = shell->exit_status;
 		}
 	}
 }
