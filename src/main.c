@@ -14,15 +14,19 @@
 void	minishell_loop(t_shell *shell)
 {
 	char	*trimmed_line;
+	char	*readline_line;
 
 	// check_signals(&shell->p_termios);
 	while (1)
 	{
 		if (isatty(fileno(stdin)))
 		{
-			trimmed_line = get_input(readline("minishell> "));
-			if (!trimmed_line)
+			readline_line = readline("minishell> ");
+			if (!readline_line)
 				builtin_exit(shell, NULL);
+			trimmed_line = get_input(readline_line);
+			if (!trimmed_line)
+				continue ;
 			add_history(trimmed_line);
 			if (!*trimmed_line || lexer(shell, trimmed_line) != LEXER_SUCCESS)
 				continue ;
@@ -32,14 +36,15 @@ void	minishell_loop(t_shell *shell)
 		else
 		{
 			int	status;
-			trimmed_line = get_input(get_next_line(fileno(stdin)));
-			if (!trimmed_line)
+			readline_line = get_next_line(fileno(stdin));
+			if (!readline_line)
 			{
 				status = shell->exit_status;
 				arr_free(shell->env);
 				free(shell);
 				exit(status);
 			}
+			trimmed_line = get_input(readline_line);
 			if (!*trimmed_line || lexer(shell, trimmed_line) != LEXER_SUCCESS)
 				continue ;
 			if (shell->env && *shell->env && shell->token)
