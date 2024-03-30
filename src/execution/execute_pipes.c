@@ -6,7 +6,7 @@
 /*   By: jschwabe <jschwabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 18:44:46 by jschwabe          #+#    #+#             */
-/*   Updated: 2024/03/29 18:44:47 by jschwabe         ###   ########.fr       */
+/*   Updated: 2024/03/30 13:17:38 by jschwabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,10 @@ static void	exec_last(t_shell *shell, int i, int *prevpipe, char **error_elem)
 		if (shell->token[i].has_redir)
 			do_heredocs(&shell->token[i], prevpipe, shell->env);
 		if (do_redirections(shell->token[i].cmd_args, error_elem) != 0)
+		{
+			close(*prevpipe);
 			exit_error(shell, *error_elem);
+		}
 		dup2(*prevpipe, STDIN_FILENO);
 		close(*prevpipe);
 		exit_free(shell, shell->token[i].cmd_func(shell, &shell->token[i]));
@@ -92,4 +95,5 @@ void	execute_pipes(t_shell *shell, int token_count)
 		exec_pipe(shell, i, &prevpipe, &error_elem);
 	}
 	exec_last(shell, i, &prevpipe, &error_elem);
+	close(prevpipe);
 }
