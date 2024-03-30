@@ -15,3 +15,5 @@ noread
 compile_commands.json
 *.tmp
 bullshit ascii.txt
+
+test/
