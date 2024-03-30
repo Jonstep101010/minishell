@@ -22,7 +22,7 @@
 
 t_lexer	*lexer_checks_basic(const char *s);
 
-int	lexer(t_shell *shell, const char *trimmed_line)
+int	lexer(t_shell *shell, char *trimmed_line)
 {
 	t_lexer	*lex;
 

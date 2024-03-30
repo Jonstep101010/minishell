@@ -6,7 +6,7 @@
 /*   By: jschwabe <jschwabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 18:31:23 by jschwabe          #+#    #+#             */
-/*   Updated: 2024/03/29 18:31:47 by jschwabe         ###   ########.fr       */
+/*   Updated: 2024/03/30 13:37:05 by jschwabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void	minishell_loop(t_shell *shell)
 			if (!trimmed_line)
 				continue ;
 			add_history(trimmed_line);
-			if (!*trimmed_line || lexer(shell, trimmed_line) != LEXER_SUCCESS)
+			if (lexer(shell, trimmed_line) != LEXER_SUCCESS)
 				continue ;
 			if (shell->env && *shell->env && shell->token)
 				execute_commands(shell, shell->token);
@@ -57,7 +57,7 @@ void	minishell_loop(t_shell *shell)
 				exit(status);
 			}
 			trimmed_line = get_input(readline_line);
-			if (!*trimmed_line || lexer(shell, trimmed_line) != LEXER_SUCCESS)
+			if (lexer(shell, trimmed_line) != LEXER_SUCCESS)
 				continue ;
 			if (shell->env && *shell->env && shell->token)
 				execute_commands(shell, shell->token);

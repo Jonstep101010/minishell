@@ -6,7 +6,7 @@
 /*   By: jschwabe <jschwabe@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 20:19:35 by jschwabe          #+#    #+#             */
-/*   Updated: 2024/03/29 20:19:58 by jschwabe         ###   ########.fr       */
+/*   Updated: 2024/03/30 12:22:23 by jschwabe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,6 @@ static char	*collect_as_ascii(char *readline_line)
 
 	i = 0;
 	collected_line = NULL;
-	if (readline_line && !*readline_line)
-	{
-		return (free(readline_line), ft_strdup(""));
-	}
 	while (readline_line && readline_line[i])
 	{
 		if (ft_isascii(readline_line[i]))
